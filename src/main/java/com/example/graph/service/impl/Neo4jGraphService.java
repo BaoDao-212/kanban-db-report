@@ -10,8 +10,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @ConditionalOnProperty(name = "graph.database.type", havingValue = "neo4j", matchIfMissing = true)
@@ -92,5 +91,48 @@ public class Neo4jGraphService implements GraphService {
     @Override
     public String getDatabaseType() {
         return "Neo4j";
+    }
+
+    @Override
+    @Transactional
+    public List<CiNode> createNodesBatch(List<String> nodeIds) {
+        List<CiNode> nodes = new ArrayList<>();
+        for (String id : nodeIds) {
+            CiNode node = CiNode.builder()
+                    .id(id)
+                    .build();
+            nodes.add(node);
+        }
+        return ciNodeRepository.saveAll(nodes);
+    }
+
+    @Override
+    @Transactional
+    public void createRelationshipsBatch(List<RelationshipBatch> relationships) {
+        Map<String, CiNode> nodeCache = new HashMap<>();
+        
+        for (RelationshipBatch rel : relationships) {
+            if (!nodeCache.containsKey(rel.sourceId)) {
+                ciNodeRepository.findById(rel.sourceId).ifPresent(node -> nodeCache.put(rel.sourceId, node));
+            }
+            if (!nodeCache.containsKey(rel.targetId)) {
+                ciNodeRepository.findById(rel.targetId).ifPresent(node -> nodeCache.put(rel.targetId, node));
+            }
+        }
+
+        for (RelationshipBatch rel : relationships) {
+            CiNode source = nodeCache.get(rel.sourceId);
+            CiNode target = nodeCache.get(rel.targetId);
+            
+            if (source != null && target != null) {
+                CiRelationship relationship = CiRelationship.builder()
+                        .relationTypeId(rel.relationTypeId)
+                        .target(target)
+                        .build();
+                source.getOutgoingRelations().add(relationship);
+            }
+        }
+        
+        ciNodeRepository.saveAll(nodeCache.values());
     }
 }

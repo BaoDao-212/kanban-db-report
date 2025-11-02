@@ -9,13 +9,32 @@ services:
       - "7687:7687"  # Bolt
     environment:
       - NEO4J_AUTH=neo4j/password
-      - NEO4J_dbms_memory_heap_max__size=2G
-      - NEO4J_dbms_memory_pagecache_size=1G
+      # Memory configuration for large datasets
+      - NEO4J_dbms_memory_heap_max__size=4G
+      - NEO4J_dbms_memory_heap_initial__size=2G
+      - NEO4J_dbms_memory_pagecache_size=2G
+      # Performance tuning
+      - NEO4J_dbms_transaction_timeout=180s
+      - NEO4J_dbms_lock_acquisition_timeout=60s
+      # Batch processing optimizations
+      - NEO4J_dbms_transaction_bookmark__ready__timeout=60s
     volumes:
       - neo4j_data:/data
       - neo4j_logs:/logs
     networks:
       - graph-network
+    deploy:
+      resources:
+        limits:
+          memory: 6G
+        reservations:
+          memory: 4G
+    healthcheck:
+      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "password", "RETURN 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
   tigergraph:
     image: docker.tigergraph.com/tigergraph:latest
@@ -23,25 +42,37 @@ services:
     ports:
       - "9000:9000"   # REST API
       - "14240:14240" # GraphStudio
+    environment:
+      # Memory settings for TigerGraph
+      - MALLOC_ARENA_MAX=2
     ulimits:
       nofile:
         soft: 1000000
         hard: 1000000
     volumes:
       - tigergraph_data:/home/tigergraph/tigergraph/data
+      - tigergraph_logs:/home/tigergraph/tigergraph/log
       - ./tigergraph-setup.gsql:/tmp/setup.gsql
     networks:
       - graph-network
+    deploy:
+      resources:
+        limits:
+          memory: 6G
+        reservations:
+          memory: 4G
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/echo"]
       interval: 30s
       timeout: 10s
       retries: 5
+      start_period: 60s
 
 volumes:
   neo4j_data:
   neo4j_logs:
   tigergraph_data:
+  tigergraph_logs:
 
 networks:
   graph-network:
