@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  neo4j:
+    image: neo4j:5.14
+    container_name: neo4j-graph
+    ports:
+      - "7474:7474"  # HTTP
+      - "7687:7687"  # Bolt
+    environment:
+      - NEO4J_AUTH=neo4j/password
+      - NEO4J_dbms_memory_heap_max__size=2G
+      - NEO4J_dbms_memory_pagecache_size=1G
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+    networks:
+      - graph-network
+
+  tigergraph:
+    image: docker.tigergraph.com/tigergraph:latest
+    container_name: tigergraph-graph
+    ports:
+      - "9000:9000"   # REST API
+      - "14240:14240" # GraphStudio
+    ulimits:
+      nofile:
+        soft: 1000000
+        hard: 1000000
+    volumes:
+      - tigergraph_data:/home/tigergraph/tigergraph/data
+      - ./tigergraph-setup.gsql:/tmp/setup.gsql
+    networks:
+      - graph-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/echo"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  neo4j_data:
+  neo4j_logs:
+  tigergraph_data:
+
+networks:
+  graph-network:
+    driver: bridge

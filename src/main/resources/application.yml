@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: graph-performance-comparison
+
+server:
+  port: 8080
+
+# Graph database configuration
+graph:
+  database:
+    type: neo4j  # Options: neo4j, tigergraph
+
+# Neo4j Configuration
+spring.neo4j:
+  uri: bolt://localhost:7687
+  authentication:
+    username: neo4j
+    password: password
+
+# TigerGraph Configuration
+tigergraph:
+  host: localhost
+  port: 9000
+  graph: MyGraph
+  username: tigergraph
+  password: tigergraph
+  token: ""
+
+# Logging
+logging:
+  level:
+    com.example.graph: INFO
+    org.springframework.data.neo4j: INFO
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
