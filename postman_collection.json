@@ -1,0 +1,264 @@
+{
+  "info": {
+    "name": "Graph Performance Comparison API",
+    "description": "Collection for testing Neo4j and TigerGraph performance",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Graph Operations",
+      "item": [
+        {
+          "name": "Get Database Type",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/graph/database-type",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "graph", "database-type"]
+            }
+          }
+        },
+        {
+          "name": "Create Node",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"node-001\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/graph/nodes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "graph", "nodes"]
+            }
+          }
+        },
+        {
+          "name": "Create Relationship",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sourceId\": \"node-001\",\n  \"targetId\": \"node-002\",\n  \"relationTypeId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/graph/relationships",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "graph", "relationships"]
+            }
+          }
+        },
+        {
+          "name": "Get Node by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/graph/nodes/node-001",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "graph", "nodes", "node-001"]
+            }
+          }
+        },
+        {
+          "name": "Get All Nodes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/graph/nodes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "graph", "nodes"]
+            }
+          }
+        },
+        {
+          "name": "Delete Node",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/graph/nodes/node-001",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "graph", "nodes", "node-001"]
+            }
+          }
+        },
+        {
+          "name": "Delete All Nodes",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/graph/nodes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "graph", "nodes"]
+            }
+          }
+        },
+        {
+          "name": "Count Nodes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/graph/stats/nodes/count",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "graph", "stats", "nodes", "count"]
+            }
+          }
+        },
+        {
+          "name": "Count Relationships",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/graph/stats/relationships/count",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "graph", "stats", "relationships", "count"]
+            }
+          }
+        },
+        {
+          "name": "Get Nodes by Relation Type",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/graph/nodes/by-relation-type/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "graph", "nodes", "by-relation-type", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Performance Tests",
+      "item": [
+        {
+          "name": "Test Create Nodes (1000)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/performance/test/create-nodes?count=1000",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "performance", "test", "create-nodes"],
+              "query": [
+                {
+                  "key": "count",
+                  "value": "1000"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Test Create Relationships (1000)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/performance/test/create-relationships?count=1000",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "performance", "test", "create-relationships"],
+              "query": [
+                {
+                  "key": "count",
+                  "value": "1000"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Test Read All Nodes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/performance/test/read-all-nodes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "performance", "test", "read-all-nodes"]
+            }
+          }
+        },
+        {
+          "name": "Test Read by Relation Type",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/performance/test/read-by-relation-type?relationTypeId=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "performance", "test", "read-by-relation-type"],
+              "query": [
+                {
+                  "key": "relationTypeId",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Full Test Suite",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/performance/test/full-suite?nodeCount=5000&relationshipCount=2500",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "performance", "test", "full-suite"],
+              "query": [
+                {
+                  "key": "nodeCount",
+                  "value": "5000"
+                },
+                {
+                  "key": "relationshipCount",
+                  "value": "2500"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Performance Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/performance/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "performance", "stats"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

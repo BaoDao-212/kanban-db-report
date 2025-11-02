@@ -1,0 +1,15 @@
+graph:
+  database:
+    type: tigergraph
+
+tigergraph:
+  host: localhost
+  port: 9000
+  graph: MyGraph
+  username: tigergraph
+  password: tigergraph
+  token: ""
+
+logging:
+  level:
+    com.example.graph: DEBUG

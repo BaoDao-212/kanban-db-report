@@ -1,0 +1,47 @@
+USE GLOBAL
+
+DROP GRAPH MyGraph CASCADE
+
+CREATE GRAPH MyGraph()
+
+USE GRAPH MyGraph
+
+CREATE VERTEX CiNode (
+  PRIMARY_ID id STRING,
+  id STRING
+) WITH STATS="OUTDEGREE_BY_EDGETYPE"
+
+CREATE DIRECTED EDGE RELATES_TO (
+  FROM CiNode,
+  TO CiNode,
+  relationTypeId INT
+) WITH REVERSE_EDGE="REVERSE_RELATES_TO"
+
+CREATE GRAPH MyGraph (CiNode, RELATES_TO)
+
+USE GRAPH MyGraph
+
+CREATE QUERY countNodes() FOR GRAPH MyGraph {
+  Result = SELECT COUNT(*) FROM CiNode:s;
+  PRINT Result;
+}
+
+CREATE QUERY countRelationships() FOR GRAPH MyGraph {
+  MapAccum<STRING, INT> @@edgeCount;
+  Start = {CiNode.*};
+  Result = SELECT s FROM Start:s -(RELATES_TO:e)- CiNode:t
+           ACCUM @@edgeCount += ("count" -> 1);
+  PRINT @@edgeCount;
+}
+
+CREATE QUERY getNodesByRelationType(INT relTypeId) FOR GRAPH MyGraph {
+  Start = {CiNode.*};
+  Result = SELECT s
+           FROM Start:s -(RELATES_TO:e)- CiNode:t
+           WHERE e.relationTypeId == relTypeId;
+  PRINT Result;
+}
+
+INSTALL QUERY countNodes
+INSTALL QUERY countRelationships
+INSTALL QUERY getNodesByRelationType
