@@ -123,6 +123,39 @@ public class TigerGraphService implements GraphService {
         return "TigerGraph";
     }
 
+    @Override
+    public List<CiNode> createNodesBatch(List<String> nodeIds) {
+        try {
+            tigerGraphClient.upsertVerticesBatch(VERTEX_TYPE, nodeIds);
+            List<CiNode> nodes = new ArrayList<>();
+            for (String id : nodeIds) {
+                nodes.add(CiNode.builder().id(id).build());
+            }
+            return nodes;
+        } catch (Exception e) {
+            log.error("Error creating nodes batch in TigerGraph", e);
+            throw new RuntimeException("Failed to create nodes batch", e);
+        }
+    }
+
+    @Override
+    public void createRelationshipsBatch(List<RelationshipBatch> relationships) {
+        try {
+            List<Map<String, Object>> edgeData = new ArrayList<>();
+            for (RelationshipBatch rel : relationships) {
+                Map<String, Object> edge = new HashMap<>();
+                edge.put("sourceId", rel.sourceId);
+                edge.put("targetId", rel.targetId);
+                edge.put("relationTypeId", rel.relationTypeId);
+                edgeData.add(edge);
+            }
+            tigerGraphClient.upsertEdgesBatch(VERTEX_TYPE, EDGE_TYPE, VERTEX_TYPE, edgeData);
+        } catch (Exception e) {
+            log.error("Error creating relationships batch in TigerGraph", e);
+            throw new RuntimeException("Failed to create relationships batch", e);
+        }
+    }
+
     private CiNode jsonNodeToCiNode(JsonNode vertex) {
         String id = vertex.has("v_id") ? vertex.get("v_id").asText() : 
                    (vertex.has("id") ? vertex.get("id").asText() : null);

@@ -256,4 +256,83 @@ public class TigerGraphClient {
 
         return 0;
     }
+
+    public void upsertVerticesBatch(String vertexType, List<String> vertexIds) throws Exception {
+        String url = String.format("%s/graph/%s",
+                config.getBaseUrl(),
+                config.getGraphName());
+
+        Map<String, Object> payload = new HashMap<>();
+        List<Map<String, Object>> vertices = new ArrayList<>();
+        
+        for (String vertexId : vertexIds) {
+            Map<String, Object> vertex = new HashMap<>();
+            vertex.put(vertexType, Map.of(
+                vertexId, Map.of("id", Map.of("value", vertexId))
+            ));
+            vertices.add(vertex);
+        }
+        
+        payload.put("vertices", vertices);
+
+        String jsonBody = objectMapper.writeValueAsString(payload);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() >= 400) {
+            log.warn("Batch vertex creation failed: {}. Status: {}", response.body(), response.statusCode());
+        }
+    }
+
+    public void upsertEdgesBatch(String sourceVertexType, String edgeType, String targetVertexType, 
+                                 List<Map<String, Object>> edgeData) throws Exception {
+        String url = String.format("%s/graph/%s",
+                config.getBaseUrl(),
+                config.getGraphName());
+
+        Map<String, Object> payload = new HashMap<>();
+        List<Map<String, Object>> edges = new ArrayList<>();
+        
+        for (Map<String, Object> edge : edgeData) {
+            String sourceId = (String) edge.get("sourceId");
+            String targetId = (String) edge.get("targetId");
+            Long relationTypeId = (Long) edge.get("relationTypeId");
+            
+            Map<String, Object> edgeMap = new HashMap<>();
+            edgeMap.put(edgeType, Map.of(
+                sourceId, Map.of(
+                    targetId, Map.of(
+                        "relationTypeId", Map.of("value", relationTypeId)
+                    )
+                )
+            ));
+            edges.add(edgeMap);
+        }
+        
+        payload.put("edges", Map.of(
+            sourceVertexType, Map.of(
+                targetVertexType, edges
+            )
+        ));
+
+        String jsonBody = objectMapper.writeValueAsString(payload);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() >= 400) {
+            log.warn("Batch edge creation failed: {}. Status: {}", response.body(), response.statusCode());
+        }
+    }
 }

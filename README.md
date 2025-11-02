@@ -2,6 +2,31 @@
 
 Ứng dụng Spring Boot để so sánh hiệu suất giữa Neo4j và TigerGraph cho mô hình graph đơn giản với CiNode và relationships.
 
+## ⚡ Quick Start - Bulk Insert 50K Nodes + 200K Relationships
+
+```bash
+# 1. Khởi động databases
+docker-compose up -d
+
+# 2. Setup TigerGraph (chỉ lần đầu)
+docker exec -it tigergraph-graph bash
+gsql < /tmp/setup.gsql
+exit
+
+# 3. Build & Run
+mvn clean package -DskipTests
+
+# Test Neo4j
+java -jar target/graph-performance-comparison-1.0.0.jar --spring.profiles.active=neo4j &
+curl -X POST "http://localhost:8080/api/bulk/insert-large-dataset?nodeCount=50000&relationshipCount=200000"
+
+# Test TigerGraph
+java -jar target/graph-performance-comparison-1.0.0.jar --spring.profiles.active=tigergraph &
+curl -X POST "http://localhost:8080/api/bulk/insert-large-dataset?nodeCount=50000&relationshipCount=200000"
+```
+
+📖 **Chi tiết**: Xem [BULK_INSERT_GUIDE.md](BULK_INSERT_GUIDE.md)
+
 ## Mô hình dữ liệu
 
 ### CiNode
@@ -40,8 +65,9 @@ src/main/java/com/example/graph/
 ├── config/
 │   └── TigerGraphConfig.java    # Configuration cho TigerGraph
 └── controller/
-    ├── GraphController.java     # CRUD operations
-    └── PerformanceTestController.java  # Performance testing endpoints
+    ├── GraphController.java            # CRUD operations
+    ├── PerformanceTestController.java  # Performance testing endpoints
+    └── BulkInsertController.java       # Bulk insert API (optimized)
 ```
 
 ## Yêu cầu
@@ -240,6 +266,41 @@ POST /api/performance/test/full-suite?nodeCount=1000&relationshipCount=500
 ```bash
 GET /api/performance/stats
 ```
+
+### Bulk Insert Endpoints (Optimized for Large Datasets)
+
+#### Bulk insert 50K nodes + 200K relationships
+```bash
+POST /api/bulk/insert-large-dataset?nodeCount=50000&relationshipCount=200000
+```
+
+#### Bulk insert chỉ nodes
+```bash
+POST /api/bulk/insert-nodes-only?nodeCount=50000
+```
+
+#### Bulk insert chỉ relationships
+```bash
+POST /api/bulk/insert-relationships-only?relationshipCount=200000
+```
+
+#### Xóa tất cả data
+```bash
+DELETE /api/bulk/clear-all
+```
+
+#### Xem thống kê
+```bash
+GET /api/bulk/stats
+```
+
+**Đặc điểm tối ưu:**
+- Batch processing (1000 records/batch)
+- Memory-efficient (auto GC hints)
+- Progress logging
+- Automatic data verification
+
+📖 **Chi tiết**: Xem [BULK_INSERT_GUIDE.md](BULK_INSERT_GUIDE.md)
 
 ## Performance Testing Examples
 
